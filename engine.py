@@ -18,9 +18,8 @@ def render_fal_premium_video(char_core, action_prompt, motion, scene_id):
     print(f"🎬 [FLOW ENGINE NODE - SCENE {scene_id}]: Building cinematic frames matrix...")
     master_cinematic_prompt = f"Cinematic shot of {char_core}, {action_prompt}. Camera dynamics: {motion}. Photorealistic, ultra-detailed textures, 8k render, masterpiece composition."
     
-    # FIX: Added clear slash between domain and endpoint ID path mappings
-    endpoint_id = "fal-ai/wan/v2.1/1.3b/text-to-video"
-    submit_url = f"https://fal.run{endpoint_id}"
+    # Hardcoded absolute URLs to prevent any string connection errors
+    submit_url = "https://fal.run"
     
     headers = {
         "Authorization": f"Key {FAL_KEY}",
@@ -49,7 +48,7 @@ def render_fal_premium_video(char_core, action_prompt, motion, scene_id):
             print(f"❌ Structural map error: Valid tracking request_id token not found. Raw: {res_data}")
             sys.exit(1)
             
-        status_url = f"{submit_url}/requests/{request_id}"
+        status_url = f"https://fal.run/requests/{request_id}"
         print(f"⏳ Tracking Job Token: [{request_id}]. Processing inside H100 cloud nodes...")
         
         for attempt in range(60): # 5 minutes maximum runtime tracking checks
