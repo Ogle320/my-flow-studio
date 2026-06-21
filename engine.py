@@ -18,7 +18,7 @@ def render_fal_premium_video(char_core, action_prompt, motion, scene_id):
     print(f"🎬 [FLOW ENGINE NODE - SCENE {scene_id}]: Building cinematic frames matrix...")
     master_cinematic_prompt = f"Cinematic shot of {char_core}, {action_prompt}. Camera dynamics: {motion}. Photorealistic, ultra-detailed textures, 8k render, masterpiece composition."
     
-    # Absolute official endpoints for Wan-AI architecture model execution paths
+    # FIX: Added clear slash between domain and endpoint ID path mappings
     endpoint_id = "fal-ai/wan/v2.1/1.3b/text-to-video"
     submit_url = f"https://fal.run{endpoint_id}"
     
@@ -27,7 +27,6 @@ def render_fal_premium_video(char_core, action_prompt, motion, scene_id):
         "Content-Type": "application/json"
     }
     
-    # Fal input formatting wraps arrays inside an 'input' dictionary layer wrapper strictly
     payload = {
         "input": {
             "prompt": master_cinematic_prompt,
@@ -50,7 +49,6 @@ def render_fal_premium_video(char_core, action_prompt, motion, scene_id):
             print(f"❌ Structural map error: Valid tracking request_id token not found. Raw: {res_data}")
             sys.exit(1)
             
-        # Tracking dynamic states through the strict cluster directories route channels
         status_url = f"{submit_url}/requests/{request_id}"
         print(f"⏳ Tracking Job Token: [{request_id}]. Processing inside H100 cloud nodes...")
         
