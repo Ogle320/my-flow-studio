@@ -18,26 +18,25 @@ def render_fal_premium_video(char_core, action_prompt, motion, scene_id):
     print(f"🎬 [FLOW ENGINE NODE - SCENE {scene_id}]: Building cinematic frames matrix...")
     master_cinematic_prompt = f"Cinematic shot of {char_core}, {action_prompt}. Camera dynamics: {motion}. Photorealistic, ultra-detailed textures, 8k render, masterpiece composition."
     
-    # FIX: Official Slash Ending Queue Routing Endpoints mapped
-    if scene_id == 1:
-        submit_url = "https://fal.run"
-        status_base = "https://fal.runrequests/"
-    else:
-        submit_url = "https://fal.run"
-        status_base = "https://fal.runrequests/"
-        
+    # Absolute official endpoints for Wan-AI architecture model execution paths
+    endpoint_id = "fal-ai/wan/v2.1/1.3b/text-to-video"
+    submit_url = f"https://fal.run{endpoint_id}"
+    
     headers = {
         "Authorization": f"Key {FAL_KEY}",
         "Content-Type": "application/json"
     }
     
+    # Fal input formatting wraps arrays inside an 'input' dictionary layer wrapper strictly
     payload = {
-        "prompt": master_cinematic_prompt,
-        "aspect_ratio": "16:9"
+        "input": {
+            "prompt": master_cinematic_prompt,
+            "aspect_ratio": "16:9"
+        }
     }
     
     try:
-        print(f"📡 Dispatching data vector to queue gateway layer...")
+        print(f"📡 Dispatching data payload to gateway server link: {submit_url}")
         response = requests.post(submit_url, json=payload, headers=headers)
         
         if response.status_code != 200:
@@ -48,14 +47,14 @@ def render_fal_premium_video(char_core, action_prompt, motion, scene_id):
         request_id = res_data.get("request_id")
         
         if not request_id:
-            print(f"❌ Structural error: Request ID tracking token missing. Raw: {res_data}")
+            print(f"❌ Structural map error: Valid tracking request_id token not found. Raw: {res_data}")
             sys.exit(1)
             
-        # Building perfect tracking path mapping parameters
-        status_url = f"{status_base}{request_id}"
-        print(f"⏳ Tracking Job Token: [{request_id}]. Processing inside dedicated H100 cloud nodes...")
+        # Tracking dynamic states through the strict cluster directories route channels
+        status_url = f"{submit_url}/requests/{request_id}"
+        print(f"⏳ Tracking Job Token: [{request_id}]. Processing inside H100 cloud nodes...")
         
-        for attempt in range(60): # 5 minutes max wait loop timing block
+        for attempt in range(60): # 5 minutes maximum runtime tracking checks
             status_response = requests.get(status_url, headers=headers)
             
             if status_response.status_code == 200:
@@ -68,12 +67,14 @@ def render_fal_premium_video(char_core, action_prompt, motion, scene_id):
                         video_url = status_data["video"]["url"]
                     elif "outputs" in status_data and "video" in status_data["outputs"]:
                         video_url = status_data["outputs"]["video"].get("url")
+                    elif "video" in status_data.get("output", {}):
+                        video_url = status_data["output"]["video"].get("url")
                         
                     if not video_url:
-                        print(f"❌ Render links empty inside server payload objects: {status_data}")
+                        print(f"❌ Video payload links array empty inside output structural elements: {status_data}")
                         sys.exit(1)
                         
-                    print(f"📥 Extracting video binary data streams from cloud cluster...")
+                    print(f"📥 Downloading raw cinematic video array stream from source chunk cluster...")
                     video_bytes = requests.get(video_url).content
                     
                     output_clip_path = f"raw_scene_block_{scene_id}.mp4"
@@ -87,7 +88,7 @@ def render_fal_premium_video(char_core, action_prompt, motion, scene_id):
                     return output_clip_path
                     
                 elif current_state == "FAILED":
-                    print(f"❌ Node processing errored out inside cloud cluster: {status_data}")
+                    print(f"❌ Processing pipeline failed inside the server node architecture layout: {status_data}")
                     sys.exit(1)
                     
             time.sleep(5)
@@ -96,7 +97,7 @@ def render_fal_premium_video(char_core, action_prompt, motion, scene_id):
         sys.exit(1)
         
     except Exception as e:
-        print(f"❌ Exception fault tracking map block: {str(e)}")
+        print(f"❌ Exception logic mapping block execution failure: {str(e)}")
         sys.exit(1)
 
 def compile_master_cinema(s1_file, s2_file):
