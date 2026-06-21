@@ -15,15 +15,12 @@ ENV_CONFIG = {
 FAL_KEY = os.getenv("FAL_KEY")
 
 def render_fal_premium_video(char_core, action_prompt, motion, scene_id):
-    print(f"🎬 [FLOW ENGINE NODE - SCENE {scene_id}]: Mapping character matrix setup...")
+    print(f"🎬 [FLOW ENGINE NODE - SCENE {scene_id}]: Parsing data vectors...")
     master_cinematic_prompt = f"Cinematic shot of {char_core}, {action_prompt}. Camera dynamics: {motion}. Photorealistic, ultra-detailed textures, 8k render, masterpiece composition."
     
-    # Corrected Fal.ai Official Verified Queue Endpoints
-    if scene_id == 1:
-        queue_url = "https://fal.run"
-    else:
-        queue_url = "https://fal.run"
-        
+    # Official Unified API Enpoints mapping for Fal Clusters
+    submit_url = "https://fal.run"
+    
     headers = {
         "Authorization": f"Key {FAL_KEY}",
         "Content-Type": "application/json"
@@ -35,26 +32,26 @@ def render_fal_premium_video(char_core, action_prompt, motion, scene_id):
     }
     
     try:
-        # Step 1: Dispatch Job Request into Fal Queue Nodes
-        print(f"📡 Requesting queue routing path from endpoint: {queue_url}")
-        response = requests.post(queue_url, json=payload, headers=headers)
+        # Step 1: Submit Generation task sequence
+        print(f"📡 Requesting queue path allocation for node processing...")
+        response = requests.post(submit_url, json=payload, headers=headers)
         
-        if response.status_code not in [200, 201, 202]:
-            print(f"❌ Queue dispatch failed with code {response.status_code}: {response.text}")
+        if response.status_code != 200:
+            print(f"❌ Handshake rejected with code {response.status_code}: {response.text}")
             sys.exit(1)
             
         res_data = response.json()
         request_id = res_data.get("request_id")
         
         if not request_id:
-            print(f"❌ Failed to extract a valid request_id from endpoint token. Raw: {res_data}")
+            print(f"❌ Extraction error: Invalid payload routing maps token returned. Raw: {res_data}")
             sys.exit(1)
             
-        # Step 2: Continuous State Check Loop Monitor
-        status_url = f"{queue_url}/requests/{request_id}"
-        print(f"⏳ Tracking Job Token: [{request_id}]. Processing inside GPU nodes...")
+        # Step 2: Checking state machine statuses
+        status_url = f"https://fal.run/requests/{request_id}"
+        print(f"⏳ Tracking Job Token: [{request_id}]. Processing inside H100 cluster nodes...")
         
-        for attempt in range(60): # 5 minutes maximum safety block time window limit
+        for attempt in range(60): # 5 minutes maximum block duration window
             status_response = requests.get(status_url, headers=headers)
             
             if status_response.status_code == 200:
@@ -62,13 +59,15 @@ def render_fal_premium_video(char_core, action_prompt, motion, scene_id):
                 current_state = status_data.get("status")
                 
                 if current_state == "COMPLETED":
-                    video_url = status_data.get("video", {}).get("url")
-                    if not video_url and "outputs" in status_data:
-                        # Backup payload array traversal mappings
-                        video_url = status_data["outputs"].get("video", {}).get("url")
+                    # Deep traversal lookup across multiple target payload variations
+                    video_url = None
+                    if "video" in status_data and "url" in status_data["video"]:
+                        video_url = status_data["video"]["url"]
+                    elif "outputs" in status_data and "video" in status_data["outputs"]:
+                        video_url = status_data["outputs"]["video"].get("url")
                         
                     if not video_url:
-                        print(f"❌ Completed state structural map missing video output URLs: {status_data}")
+                        print(f"❌ Output links arrays empty inside structural response fields: {status_data}")
                         sys.exit(1)
                         
                     print(f"📥 Extracting video binary data streams from source cluster...")
@@ -81,7 +80,7 @@ def render_fal_premium_video(char_core, action_prompt, motion, scene_id):
                     with open(output_clip_path, "wb") as f:
                         f.write(video_bytes)
                         
-                    print(f"✅ [NODE SUCCESS]: Scene {scene_id} frozen successfully!")
+                    print(f"✅ [NODE SUCCESS]: Scene {scene_id} frozen successfully into workspace!")
                     return output_clip_path
                     
                 elif current_state == "FAILED":
