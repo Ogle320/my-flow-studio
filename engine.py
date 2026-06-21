@@ -15,16 +15,18 @@ ENV_CONFIG = {
 FAL_KEY = os.getenv("FAL_KEY")
 
 def render_fal_premium_video(char_core, action_prompt, motion, scene_id):
-    print(f"🎬 [FLOW ENGINE NODE - SCENE {scene_id}]: Initiating official Fal.ai secure pipeline...")
+    print(f"🎬 [FLOW ENGINE NODE - SCENE {scene_id}]: Mapping character matrix setup...")
     master_cinematic_prompt = f"Cinematic shot of {char_core}, {action_prompt}. Camera dynamics: {motion}. Photorealistic, ultra-detailed textures, 8k render, masterpiece composition."
     
-    # Updated direct execution channel without relying on manual queuing JSON strings
-    url = "https://fal.run"
-    
+    # Corrected Fal.ai Official Verified Queue Endpoints
+    if scene_id == 1:
+        queue_url = "https://fal.run"
+    else:
+        queue_url = "https://fal.run"
+        
     headers = {
         "Authorization": f"Key {FAL_KEY}",
-        "Content-Type": "application/json",
-        "Accept": "application/json"
+        "Content-Type": "application/json"
     }
     
     payload = {
@@ -33,37 +35,66 @@ def render_fal_premium_video(char_core, action_prompt, motion, scene_id):
     }
     
     try:
-        # Utilizing a direct standard proxy run for zero-data translation errors
-        response = requests.post(url, json=payload, headers=headers)
+        # Step 1: Dispatch Job Request into Fal Queue Nodes
+        print(f"📡 Requesting queue routing path from endpoint: {queue_url}")
+        response = requests.post(queue_url, json=payload, headers=headers)
         
-        if response.status_code != 200:
-            print(f"❌ Server rejected request with code {response.status_code}: {response.text}")
+        if response.status_code not in [200, 201, 202]:
+            print(f"❌ Queue dispatch failed with code {response.status_code}: {response.text}")
             sys.exit(1)
             
-        data = response.json()
+        res_data = response.json()
+        request_id = res_data.get("request_id")
         
-        # Safe object mapping lookup extraction from responses
-        if "video" in data and "url" in data["video"]:
-            video_url = data["video"]["url"]
-        else:
-            print(f"❌ Unexpected response payload format from server nodes: {data}")
+        if not request_id:
+            print(f"❌ Failed to extract a valid request_id from endpoint token. Raw: {res_data}")
             sys.exit(1)
             
-        print(f"📥 Downloading raw cinematic video array stream data for scene {scene_id}...")
-        video_bytes = requests.get(video_url).content
+        # Step 2: Continuous State Check Loop Monitor
+        status_url = f"{queue_url}/requests/{request_id}"
+        print(f"⏳ Tracking Job Token: [{request_id}]. Processing inside GPU nodes...")
         
-        output_clip_path = f"raw_scene_block_{scene_id}.mp4"
-        if os.path.exists(output_clip_path):
-            os.remove(output_clip_path)
+        for attempt in range(60): # 5 minutes maximum safety block time window limit
+            status_response = requests.get(status_url, headers=headers)
             
-        with open(output_clip_path, "wb") as f:
-            f.write(video_bytes)
+            if status_response.status_code == 200:
+                status_data = status_response.json()
+                current_state = status_data.get("status")
+                
+                if current_state == "COMPLETED":
+                    video_url = status_data.get("video", {}).get("url")
+                    if not video_url and "outputs" in status_data:
+                        # Backup payload array traversal mappings
+                        video_url = status_data["outputs"].get("video", {}).get("url")
+                        
+                    if not video_url:
+                        print(f"❌ Completed state structural map missing video output URLs: {status_data}")
+                        sys.exit(1)
+                        
+                    print(f"📥 Extracting video binary data streams from source cluster...")
+                    video_bytes = requests.get(video_url).content
+                    
+                    output_clip_path = f"raw_scene_block_{scene_id}.mp4"
+                    if os.path.exists(output_clip_path):
+                        os.remove(output_clip_path)
+                        
+                    with open(output_clip_path, "wb") as f:
+                        f.write(video_bytes)
+                        
+                    print(f"✅ [NODE SUCCESS]: Scene {scene_id} frozen successfully!")
+                    return output_clip_path
+                    
+                elif current_state == "FAILED":
+                    print(f"❌ Server processing pipeline errored out inside the node cluster: {status_data}")
+                    sys.exit(1)
+                    
+            time.sleep(5)
             
-        print(f"✅ [NODE SUCCESS]: Scene {scene_id} fully cached into cloud environment!")
-        return output_clip_path
+        print("❌ [TIMEOUT ERROR]: Generation task hung beyond loop limit bounds.")
+        sys.exit(1)
         
     except Exception as e:
-        print(f"❌ Critical system node mapping failure: {str(e)}")
+        print(f"❌ Deep exception logic fault mapping block: {str(e)}")
         sys.exit(1)
 
 def compile_master_cinema(s1_file, s2_file):
