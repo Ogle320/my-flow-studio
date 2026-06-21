@@ -11,7 +11,7 @@ on:
         required: true
         default: 'typing fast on holograms inside a dark raining room'
       user_camera_1:
-        description: '🎥 SCENE 1 CAMERA MOTION (Dolly, Pan, Orbit etc)'
+        description: '🎥 SCENE 1 CAMERA MOTION'
         required: true
         default: 'Slow cinematic dolly zoom in'
       user_scene_2:
@@ -36,10 +36,11 @@ jobs:
           python-version: '3.11'
       - name: Install System Utilities & Multi-Track Compilers
         run: |
-          pip install requests gradio_client
+          pip install requests
           sudo apt-get update && sudo apt-get install -y ffmpeg
       - name: Fire Up Continuous Background Render Pipeline
         env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
           INPUT_CHARACTER: ${{ github.event.inputs.user_character }}
           INPUT_SCENE_1: ${{ github.event.inputs.user_scene_1 }}
           INPUT_CAMERA_1: ${{ github.event.inputs.user_camera_1 }}
