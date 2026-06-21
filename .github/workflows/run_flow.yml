@@ -1,56 +1,10 @@
-name: Google Flow Competitor Studio Factory
-on:
-  workflow_dispatch:
-    inputs:
-      user_character:
-        description: '🎨 CHARACTER DESIGN (Same actor will appear in all scenes)'
-        required: true
-        default: 'A young female cyberpunk hacker, short neon pink hair, wearing leather jacket and glowing glasses'
-      user_scene_1:
-        description: '🎞️ SCENE 1 ACTION (What the character is doing)'
-        required: true
-        default: 'typing fast on holograms inside a dark raining room'
-      user_camera_1:
-        description: '🎥 SCENE 1 CAMERA MOTION'
-        required: true
-        default: 'Slow cinematic dolly zoom in'
-      user_scene_2:
-        description: '🎞️ SCENE 2 ACTION (Next sequence for the same character)'
-        required: true
-        default: 'running under the neon lights from chasing drones'
-      user_camera_2:
-        description: '🎥 SCENE 2 CAMERA MOTION'
-        required: true
-        default: 'Extreme close up panning tracking camera'
-
-jobs:
-  flow-takar-runner:
-    runs-on: ubuntu-latest
-    timeout-minutes: 360
-    steps:
-      - name: Checkout Code Blueprint Repository
-        uses: actions/checkout@v4
-      - name: Initialize Premium Python Engine Instance
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - name: Install System Utilities & Multi-Track Compilers
-        run: |
-          pip install requests
-          sudo apt-get update && sudo apt-get install -y ffmpeg
+# Baki files same rahegi, bas env block update hoga:
       - name: Fire Up Continuous Background Render Pipeline
         env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          FAL_KEY: ${{ secrets.FAL_KEY }}
           INPUT_CHARACTER: ${{ github.event.inputs.user_character }}
           INPUT_SCENE_1: ${{ github.event.inputs.user_scene_1 }}
           INPUT_CAMERA_1: ${{ github.event.inputs.user_camera_1 }}
           INPUT_SCENE_2: ${{ github.event.inputs.user_scene_2 }}
           INPUT_CAMERA_2: ${{ github.event.inputs.user_camera_2 }}
         run: python engine.py
-      - name: Package Uncompressed Premium Master Asset Output
-        uses: actions/upload-artifact@v4
-        with:
-          name: Premium_Flow_Competitor_Pack
-          path: |
-            flow_studio_masterpiece_1080p.mp4
-            production_poster_preview.png
