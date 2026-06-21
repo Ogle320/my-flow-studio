@@ -18,24 +18,42 @@ def generate_google_flow_takar_video(char_core, action_prompt, motion, scene_id)
     print(f"🎬 [FLOW ENGINE NODE - SCENE {scene_id}]: Mapping character mesh definitions...")
     master_cinematic_prompt = f"Cinematic shot of {char_core}, {action_prompt}. Camera dynamics: {motion}. Photorealistic, ultra-detailed textures, 8k render, perfect character identity tracking."
     
-    try:
-        # Handshaking directly into the 14 Billion Parameter Wan 2.1 cluster node
-        client = Client("Wan-AI/Wan2.1-T2V-14B")
-        result = client.predict(
-            prompt=master_cinematic_prompt,
-            negative_prompt="deformed body, face shift, blurry eyes, flashing artifacts, text overlay, low-end render",
-            api_name="/generate_video"
-        )
-        
-        output_clip_path = f"raw_scene_block_{scene_id}.mp4"
-        if os.path.exists(output_clip_path):
-            os.remove(output_clip_path)
-        os.rename(result, output_clip_path)
-        print(f"✅ [NODE SUCCESS]: Scene {scene_id} generated with strict visual continuity anchors!")
-        return output_clip_path
-    except Exception as e:
-        print(f"❌ [ENGINE ERROR]: Public cluster node calculation error: {str(e)}")
-        sys.exit(1)
+    # FIX: Live server nodes space configuration path mappings
+    # If the primary channel is overloaded, it automatically switches to alternative clusters
+    spaces_cluster_pool = [
+        "Qadeer24/Wan-AI-Wan2.1-T2V-14B",
+        "fffiloni/Wan2.1"
+    ]
+    
+    target_space = spaces_cluster_pool[0] if scene_id == 1 else spaces_cluster_pool[1]
+    
+    for attempt in range(len(spaces_cluster_pool)):
+        try:
+            print(f"📡 Handshaking with cluster endpoint node: {target_space}...")
+            client = Client(target_space)
+            
+            # Universal parameter execution framework mapping
+            result = client.predict(
+                prompt=master_cinematic_prompt,
+                negative_prompt="deformed body, face shift, blurry eyes, flashing artifacts, text overlay, low-end render",
+                api_name="/generate_video"
+            )
+            
+            output_clip_path = f"raw_scene_block_{scene_id}.mp4"
+            if os.path.exists(output_clip_path):
+                os.remove(output_clip_path)
+            os.rename(result, output_clip_path)
+            print(f"✅ [NODE SUCCESS]: Scene {scene_id} generated perfectly via {target_space}!")
+            return output_clip_path
+            
+        except Exception as e:
+            print(f"⚠️ Channel {target_space} busy or failed: {str(e)}")
+            # Alternate recovery backup path assignment
+            target_space = spaces_cluster_pool[(attempt + 1) % len(spaces_cluster_pool)]
+            time.sleep(5)
+            
+    print("❌ [CRITICAL PIPELINE BREAK]: All public open-source server networks are currently full.")
+    sys.exit(1)
 
 def compile_master_cinema(s1_file, s2_file):
     print("📦 [MASTER ASSEMBLER]: Initiating native multi-clip formatting layers...")
